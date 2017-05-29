@@ -111,7 +111,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	//   http://planning.cs.uiuc.edu/node99.html
 
 	for (int i = 0; i < num_particles; ++i) {
-		Particle particle = particles[i];
+		Particle &particle = particles[i];
 
 		// transform observations to map coordinate
 		std::vector<LandmarkObs> transformed_observations;
@@ -127,7 +127,8 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
 		// predict mesurements
 		std::vector<LandmarkObs> predictions;
-		for (Map::single_landmark_s landmark : map_landmarks.landmark_list) {
+		for (int k = 0; k < map_landmarks.landmark_list.size(); ++k) {
+			Map::single_landmark_s landmark = map_landmarks.landmark_list[k];
 			if (dist(particle.x, particle.y, landmark.x_f, landmark.y_f) < sensor_range) {
 				LandmarkObs pred = {landmark.id_i, landmark.x_f, landmark.y_f};
 				predictions.push_back(pred);
@@ -138,8 +139,8 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
 		// update particle weight
 		particle.weight = 1;
-		for (int k = 0; k < transformed_observations.size(); ++k) {
-			LandmarkObs obs = transformed_observations[k];
+		for (int l = 0; l < transformed_observations.size(); ++l) {
+			LandmarkObs obs = transformed_observations[l];
 			LandmarkObs pred = predictions[obs.id];
 
 			double dx2 = pow(obs.x - pred.x, 2);
@@ -147,7 +148,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 			double std_x = std_landmark[0];
 			double std_y = std_landmark[1];
 			double denom = 1 / (2 * M_PI * std_x * std_y);
-			double weight = exp(-((dx2/2*std_x*std_x) + (dy2/2*std_y*std_y)));
+			double weight = exp(-((dx2/2*std_x*std_x) + (dy2/2*std_y*std_y))) * denom;
 
 			particle.weight *= weight;
 		}
