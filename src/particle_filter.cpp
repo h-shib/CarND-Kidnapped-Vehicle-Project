@@ -116,6 +116,48 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	//   and the following is a good resource for the actual equation to implement (look at equation 
 	//   3.33
 	//   http://planning.cs.uiuc.edu/node99.html
+
+	for (int i = 0; i < num_particles; ++i) {
+		Particle particle = particles[i];
+
+		// transform observations to map coordinate
+		std::vector<LandmarkObs> transformed_observations;
+		for (int j = 0; j < observations.size(); ++j) {
+			LandmarkObs obs = observations[j];
+			LandmarkObs transformed_obs;
+
+			transformed_obs.x = obs.x * cos(particle.theta) - obs.y * sin(particle.theta) + particle.x;
+			transformed_obs.y = obs.x * sin(particle.theta) + obs.y * cos(particle.theta) + particle.y;
+
+			transformed_observations.push_back(transformed_obs);
+		}
+
+		// predict mesurements
+		std::vector<LandmarkObs> predictions;
+		for (Map::single_landmark_s landmark : map_landmarks.landmark_list) {
+			if (dist(particle.x, particle.y, landmark.x_f, landmark.y_f) < sensor_range) {
+				LandmarkObs pred = {landmark.id_i, landmark.x_f, landmark.y_f};
+				predictions.push_back(pred);
+			}
+		}
+
+		// update particle weight
+		particle.weight = 1;
+		for (int k = 0; k < transformed_observations.size(); ++k) {
+			LandmarkObs obs = transformed_observations[k];
+			LandmarkObs pred = predictions[obs.id];
+
+			double dx2 = pow(obs.x - pred.x, 2);
+			double dy2 = pow(obs.y - pred.y, 2);
+			double std_x = std_landmark[0];
+			double std_y = std_landmark[1];
+			double denom = 1 / (2 * M_PI * std_x * std_y);
+			double weight = exp(-((dx2/2*std_x*std_x) + (dy2/2*std_y*std_y)));
+
+			particle.weight *= weight;
+		}
+		weights[i] = particle.weight;
+	}
 }
 
 void ParticleFilter::resample() {
