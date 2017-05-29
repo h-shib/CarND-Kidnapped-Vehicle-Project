@@ -26,7 +26,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
 	
 	// Number of particles to draw
-	num_particles = 100;
+	num_particles = 300;
 
 	// Set Normal Distribution for each parameter
 	random_device rd;
@@ -38,21 +38,15 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	// Initialize particle and set to particles vector
 	for (int i = 0; i < num_particles; ++i) {
 		// create a sample particle
-		double sample_x, sample_y, sample_theta;
-		sample_x     = dist_x(generator);
-		sample_y     = dist_y(generator);
-		sample_theta = dist_theta(generator);
-
-		// set initial parameters
 		Particle particle;
 		particle.id = i;
-		particle.x = sample_x;
-		particle.y = sample_y;
-		particle.theta = sample_theta;
+		particle.x = dist_x(generator);
+		particle.y = dist_y(generator);
+		particle.theta = dist_theta(generator);
 		particle.weight = 1.0;
 
 		particles.push_back(particle);
-		weights.push_back(1.0);
+		weights.push_back(particle.weight);
 	}
 
 	is_initialized = true;
@@ -104,6 +98,16 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to 
 	//   implement this method and use it as a helper during the updateWeights phase.
 
+	for(LandmarkObs obs : observations){
+        double min_dist = std::numeric_limits<double>::max();
+        for(LandmarkObs pred : predicted){
+            double distance = dist(obs.x, obs.y, pred.x, pred.y);
+            if (distance < min_dist){
+                min_dist = distance;
+                obs.id = pred.id;
+            }
+        }
+    }
 }
 
 void ParticleFilter::updateWeights(double sensor_range, double std_landmark[], 
@@ -142,6 +146,8 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 				predictions.push_back(pred);
 			}
 		}
+
+		dataAssociation(predictions, transformed_observations);
 
 		// update particle weight
 		particle.weight = 1;
