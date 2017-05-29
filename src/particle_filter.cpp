@@ -26,7 +26,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
 	
 	// Number of particles to draw
-	num_particles = 1000;
+	num_particles = 300;
 
 	// Set Normal Distribution for each parameter
 	default_random_engine generator;
@@ -83,17 +83,18 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to 
 	//   implement this method and use it as a helper during the updateWeights phase.
 
-	for(int i=0; i<observations.size(); i++) {
-		double min_dist = numeric_limits<double>::max();
-		for(int j=0; j<predicted.size(); j++) {
-			LandmarkObs prediction = predicted[j];
-			double distance = dist(observations[i].x, observations[i].y, prediction.x, prediction.y);
-			if (distance < min_dist) {
-				observations[i].id = j;
-				min_dist = distance;
-			}
-		}
-	}
+    for (int i = 0; i < observations.size(); ++i) {
+    	LandmarkObs& obs = observations[i];
+    	double min_dist = numeric_limits<double>::max();
+    	for (int j = 0; j < predicted.size(); ++j) {
+    		LandmarkObs pred = predicted[j];
+    		double distance = dist(obs.x, obs.y, pred.x, pred.y);
+    		if (distance < min_dist) {
+    			min_dist = distance;
+    			obs.id = j;
+    		}
+    	}
+    }
 }
 
 void ParticleFilter::updateWeights(double sensor_range, double std_landmark[], 
