@@ -59,36 +59,23 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	//  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
 	//  http://www.cplusplus.com/reference/random/default_random_engine/
 
-	for (int i = 0; i < particles.size(); ++i) {
-
-		// Calculate next position
-		double next_x, next_y, next_theta;
-		double x = particles[i].x;
-		double y = particles[i].y;
-		double theta = particles[i].theta;
-
-		if (yaw_rate == 0) {
-			next_x = x + (velocity * cos(theta) * delta_t);
-			next_y = y + (velocity * sin(theta) * delta_t);
-			next_theta = theta;
-		} else {
-			next_x = x + (velocity / yaw_rate) * (sin(theta + yaw_rate * delta_t) - sin(theta));
-			next_y = y + (velocity / yaw_rate) * (cos(theta) - cos(theta + yaw_rate * delta_t));
-			next_theta = theta + yaw_rate * delta_t;
-		}
-
-		// Add random Gaussian noise
+	// Set random Gaussian noise
 		random_device rd;
 		default_random_engine generator(rd());
-		normal_distribution<double> dist_x(next_x, std_pos[0]);
-		normal_distribution<double> dist_y(next_y, std_pos[1]);
-		normal_distribution<double> dist_theta(next_theta, std_pos[2]);
+		normal_distribution<double> dist_x(0, std_pos[0]);
+		normal_distribution<double> dist_y(0, std_pos[1]);
+		normal_distribution<double> dist_theta(0, std_pos[2]);
 
-		// Update particle
-		particles[i].x     = dist_x(generator);
-		particles[i].y     = dist_y(generator);
-		particles[i].theta = dist_theta(generator);
+	for (int i = 0; i < particles.size(); ++i) {
 
+		if (yaw_rate == 0) {
+			particles[i].x += velocity * cos(particles[i].theta) * delta_t + dist_x(generator);
+			particles[i].y += velocity * sin(particles[i].theta) * delta_t + dist_y(generator);
+		} else {
+			particles[i].x += (velocity / yaw_rate) * (sin(particles[i].theta + yaw_rate * delta_t) - sin(particles[i].theta)) + dist_x(generator);
+			particles[i].y += (velocity / yaw_rate) * (cos(particles[i].theta) - cos(particles[i].theta + yaw_rate * delta_t)) + dist_y(generator);
+			particles[i].theta += yaw_rate * delta_t + dist_theta(generator);
+		}
 	}
 }
 
