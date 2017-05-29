@@ -29,7 +29,8 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	num_particles = 100;
 
 	// Set Normal Distribution for each parameter
-	default_random_engine generator;
+	random_device rd;
+	default_random_engine generator(rd());
 	normal_distribution<double> dist_x(x, std[0]);
 	normal_distribution<double> dist_y(y, std[1]);
 	normal_distribution<double> dist_theta(theta, std[2]);
@@ -83,7 +84,8 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 		}
 
 		// Add random Gaussian noise
-		default_random_engine generator;
+		random_device rd;
+		default_random_engine generator(rd());
 		normal_distribution<double> dist_x(next_x, std_pos[0]);
 		normal_distribution<double> dist_y(next_y, std_pos[1]);
 		normal_distribution<double> dist_theta(next_theta, std_pos[2]);
@@ -165,6 +167,16 @@ void ParticleFilter::resample() {
 	// NOTE: You may find std::discrete_distribution helpful here.
 	//   http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
 
+	random_device rd;
+	default_random_engine generator(rd());
+
+	discrete_distribution<int> dist_w(weights.begin(), weights.end());
+	vector<Particle> resample_particles;
+
+	for (Particle particle : particles) {
+		resample_particles.push_back(particles[dist_w(generator)]);
+	}
+	particles = resample_particles;
 }
 
 Particle ParticleFilter::SetAssociations(Particle particle, std::vector<int> associations, std::vector<double> sense_x, std::vector<double> sense_y)
