@@ -26,7 +26,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
 	
 	// Number of particles to draw
-	num_particles = 300;
+	num_particles = 1000;
 
 	// Set Normal Distribution for each parameter
 	random_device rd;
@@ -85,8 +85,8 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to 
 	//   implement this method and use it as a helper during the updateWeights phase.
 
-	for(LandmarkObs obs : observations){
-        double min_dist = std::numeric_limits<double>::max();
+	for(LandmarkObs& obs : observations){
+        double min_dist = numeric_limits<double>::max();
         for(LandmarkObs pred : predicted){
             double distance = dist(obs.x, obs.y, pred.x, pred.y);
             if (distance < min_dist){
@@ -114,7 +114,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		Particle &particle = particles[i];
 
 		// transform observations to map coordinate
-		std::vector<LandmarkObs> transformed_observations;
+		vector<LandmarkObs> transformed_observations;
 		for (int j = 0; j < observations.size(); ++j) {
 			LandmarkObs obs = observations[j];
 			LandmarkObs transformed_obs;
@@ -126,7 +126,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		}
 
 		// predict mesurements
-		std::vector<LandmarkObs> predictions;
+		vector<LandmarkObs> predictions;
 		for (int k = 0; k < map_landmarks.landmark_list.size(); ++k) {
 			Map::single_landmark_s landmark = map_landmarks.landmark_list[k];
 			if (dist(particle.x, particle.y, landmark.x_f, landmark.y_f) < sensor_range) {
