@@ -29,8 +29,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	num_particles = 1000;
 
 	// Set Normal Distribution for each parameter
-	random_device rd;
-	default_random_engine generator(rd());
+	default_random_engine generator;
 	normal_distribution<double> dist_x(x, std[0]);
 	normal_distribution<double> dist_y(y, std[1]);
 	normal_distribution<double> dist_theta(theta, std[2]);
@@ -60,8 +59,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	//  http://www.cplusplus.com/reference/random/default_random_engine/
 
 	// Set random Gaussian noise
-		random_device rd;
-		default_random_engine generator(rd());
+		default_random_engine generator;
 		normal_distribution<double> dist_x(0, std_pos[0]);
 		normal_distribution<double> dist_y(0, std_pos[1]);
 		normal_distribution<double> dist_theta(0, std_pos[2]);
@@ -161,9 +159,7 @@ void ParticleFilter::resample() {
 	// NOTE: You may find std::discrete_distribution helpful here.
 	//   http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
 
-	random_device rd;
-	default_random_engine generator(rd());
-
+	default_random_engine generator;
 	discrete_distribution<int> dist_w(weights.begin(), weights.end());
 	vector<Particle> resample_particles;
 
