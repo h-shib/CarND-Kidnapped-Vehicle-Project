@@ -83,16 +83,17 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to 
 	//   implement this method and use it as a helper during the updateWeights phase.
 
-	for(LandmarkObs& obs : observations){
-        double min_dist = numeric_limits<double>::max();
-        for(LandmarkObs pred : predicted){
-            double distance = dist(obs.x, obs.y, pred.x, pred.y);
-            if (distance < min_dist){
-                min_dist = distance;
-                obs.id = pred.id;
-            }
-        }
-    }
+	for(int i=0; i<observations.size(); i++) {
+		double min_dist = numeric_limits<double>::max();
+		for(int j=0; j<predicted.size(); j++) {
+			LandmarkObs prediction = predicted[j];
+			double distance = dist(observations[i].x, observations[i].y, prediction.x, prediction.y);
+			if (distance < min_dist) {
+				observations[i].id = j;
+				min_dist = distance;
+			}
+		}
+	}
 }
 
 void ParticleFilter::updateWeights(double sensor_range, double std_landmark[], 
@@ -160,10 +161,10 @@ void ParticleFilter::resample() {
 	//   http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
 
 	default_random_engine generator;
-	discrete_distribution<int> dist_w(weights.begin(), weights.end());
+	discrete_distribution<> dist_w(weights.begin(), weights.end());
 	vector<Particle> resample_particles;
 
-	for (Particle particle : particles) {
+	for (int i = 0; i < num_particles; ++i) {
 		resample_particles.push_back(particles[dist_w(generator)]);
 	}
 	particles = resample_particles;
